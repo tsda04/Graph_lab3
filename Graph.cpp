@@ -45,21 +45,27 @@ public:
         }
         
         // Удаление всех ребер, связанных с вершиной
-        for (auto it = _graph.begin(); it != _graph.end();) {
-            if (it->from == v || it->to == v) {
-                it = _graph.erase(it);
-            }
-            else {
-                ++it;
+        for (auto it = _graph.begin(); it != _graph.end(); ++it) {
+            if (has_edge(it->first, v)) {
+                remove_edge(it->first, v);
             }
         }
-
         return _graph.erase(v);
-        return true;
     }
 
-    // TODO Получение списка вершин
-    std::vector<Vertex> vertices() const;
+
+    // Получение списка вершин
+    std::vector<Vertex> vertices() const {
+        vector<Vertex> vert;
+        if (_graph.size() == 0) return vert;
+        else {
+            for (auto i : _graph) {
+                vert.push_back(i.first);
+            }
+            return vert;
+        }
+    }
+
 
     // -------------------------- Ребра ------------------------------
     // Добавление ребра
@@ -77,7 +83,7 @@ public:
     bool remove_edge(const Vertex& from, const Vertex& to) {
         if (has_edge(from, to)) {
             for (auto it = _graph.at(from).begin(); it != _graph.at(from).end(); ++it) {
-                if (it->from == from && it->to == to) {
+                if ((*it)._to == to) {
                     _graph.at(from).erase(it);
                     return true;
                 }
@@ -85,14 +91,13 @@ public:
         }
         else return false;
     }
-    // Удаление ребра по объекту Edge
-    bool remove_edge(const Edge& e);
+ 
 
     // Проверка наличия ребра по вершинам
     bool has_edge(const Vertex& from, const Vertex& to) const {
         if (has_vertex(from) && has_vertex(to)) {
-            for (auto i = _graph.at(from).begin(); i != _graph.at(from).end(); ++i) {
-                if ((*i)._to_id == to) {
+            for (auto it = _graph.at(from).begin(); it != _graph.at(from).end(); ++it) {
+                if ((*it)._to == to) {
                     return true;
                 }
             }
@@ -100,19 +105,26 @@ public:
         }
         else return false;
     }
-    // Проверка наличия ребра по объекту Edge
-    bool has_edge(const Edge& e) const;
 
     // --------------------------------------------------------------
     // Получение всех ребер, выходящих из вершины
-    std::vector<Edge> edges(const Vertex& vertex);
+    std::vector<Edge> edges(const Vertex& v) {
+        vector<Edge>  result;
+        if (!has_vertex(v)) return  result;
+        for (auto it = _graph.at(v).begin(); it != _graph.at(v).end(); ++it) {
+            result.push_back((*it));
+        }
+        return edges;
+    }
 
     // Порядок графа
-    size_t order() const;
-
-    // Степень вершины
-    size_t degree(const Vertex& v) const;
-
+    size_t order() const {
+        return _graph.size();
+    }
+    size_t degree(const Vertex& v) const {
+        if (!has_vertex(v)) return 0;
+        else return _graph.at(v).size();
+    }
     // -------------------------- Вариант ------------------------------
 
     // Поиск кратчайшего пути с помощью алгоритма Беллмана-Форда
@@ -148,5 +160,24 @@ int main() {
     std::cout << "Graph has vertex 'A': " << graph.has_vertex("A") << std::endl;
     std::cout << "Graph has vertex 'F': " << graph.has_vertex("F") << std::endl;
 
+    // удаление ребра
+    graph.remove_edge("B", "D");
+    
+    
+    // удаление вершины
+    graph.remove_vertex("D");
+
+    // Получение списка вершин
+    std::cout << "List of vertexes: ";
+    for (const auto& vertex : graph.vertices()) {
+        std::cout << vertex << " ";
+    }
+    std::cout << std::endl;
+
+    // Порядок графа
+    std::cout << "Order: " << graph.order() << std::endl;
+    
+    // Степень вершины
+    std::cout << "Degree \"A\": " << graph.degree("A") << std::endl;
     return 0;
 }
